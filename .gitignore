@@ -1,0 +1,41 @@
+# Diretórios
+node_modules/
+dist/
+
+# Arquivos de compilação
+*.js
+*.js.map
+
+# Arquivos de ambiente
+.env
+
+# Logs
+logs/
+*.log
+
+# Arquivos de configuração
+.DS_Store
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# Arquivos temporários
+*.tmp
+*.temp
+*.swp
+
+# Dependências
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Arquivos de cache
+.npm
+.yarn
+.pnp
+.pnp.js
+
+# Outros
+Thumbs.db
+.idea/
+.svn/
