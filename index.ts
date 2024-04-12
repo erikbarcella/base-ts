@@ -1,12 +1,12 @@
+import express from 'express';
+
 import 'dotenv-safe/config'; // Concise import for dotenv-safe
 
 console.log(`[BackEnd]=> Starting...`);
 
-import express, { Request, Response } from 'express';
-
 const app = express();
 
-import http from 'http';
+import * as http from 'http';
 
 import routes from './src/Routes/routes';
 
@@ -14,7 +14,7 @@ import routes from './src/Routes/routes';
 app.use(express.json());
 
 // Define generic route handlers for GET, POST, DELETE, and PUT requests
-const handleRequest = (req: Request, res: Response) => routes(req, res);
+const handleRequest = (req: express.Request, res: express.Response) => routes(req, res);
 
 app.get('*', handleRequest);
 app.post('*', handleRequest);

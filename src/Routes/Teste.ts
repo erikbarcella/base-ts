@@ -1,4 +1,6 @@
-import { Errors, Validate } from '../Utils/functions'; // Assuming functions are exported properly
+import Errors from './../Utils/Functions/Errors';
+import Validate from './../Utils/Functions/Validate';
+import { ErrorType } from './../Utils/Functions/Errors';
 
 interface Field {
   required?: boolean;
@@ -11,7 +13,7 @@ type RouteResponse = { status: number } & { [key: string]: any };
 
 const route = async (req: Request, res: Response): Promise<RouteResponse | Error> => {
   try {
-    const validatedBody = await Validate(req.body, {
+    const validatedBody = await Validate(Request, {
       string: { required: true, type: 'string' } as Field,
       number: { required: true, type: 'number', remove_zeros: true } as Field,
       array: { required: true, type: 'array' } as Field,
@@ -20,15 +22,23 @@ const route = async (req: Request, res: Response): Promise<RouteResponse | Error
       email: { required: true, type: 'email' } as Field,
       date: { required: true, type: 'date', default: new Date() } as Field,
     });
-    req.body = validatedBody; // Update request body with validated data
 
     return { status: 201, ...req.body };
   } catch (err) {
-    return Errors(err, `ROUTE ${__filename}`)
-      .then(() => route(req, res)) // Assuming route is defined within the same scope
+    let errorType: ErrorType;
+    if (typeof err === 'string') {
+      errorType = { error: err };
+    } else if (err instanceof Error) {
+      errorType = { error: err.message };
+    } else {
+      // Trate outros tipos de erro ou lance uma exceção
+      throw new Error('Erro desconhecido');
+    }
+    return Errors(errorType, `ROUTE ${__filename}`)
+      .then(() => route(req, res)) // Supondo que route está definida no mesmo escopo
       .catch((e) => e);
   }
-};
+}
 
 export default {
   route,

@@ -1,5 +1,6 @@
-import { Errors, Validate } from '../../../Utils/functions'; // Assuming functions are exported properly
-
+import Errors,{ ErrorType } from './../../Utils/Functions/Errors';
+import Validate from './../../Utils/Functions/Validate';
+import { Request } from 'express';
 interface Field {
   required?: boolean;
   type?: string;
@@ -16,8 +17,17 @@ const route = async (req: Request, res: Response): Promise<RouteResponse | Error
 
     return { status: 200, ...req.query };
   } catch (err) {
-    return Errors(err, `ROUTE ${__filename}`)
-      .then(() => route(req, res)) // Assuming route is defined within the same scope
+    let errorType: ErrorType;
+    if (typeof err === 'string') {
+      errorType = { error: err };
+    } else if (err instanceof Error) {
+      errorType = { error: err.message };
+    } else {
+      // Trate outros tipos de erro ou lance uma exceção
+      throw new Error('Erro desconhecido');
+    }
+    return Errors(errorType, `ROUTE ${__filename}`)
+      .then(() => route(req, res)) // Supondo que route está definida no mesmo escopo
       .catch((e) => e);
   }
 };

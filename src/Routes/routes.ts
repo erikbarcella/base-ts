@@ -1,30 +1,59 @@
-import { Request, Response } from 'express';
-import { db } from '../Utils/bases';
-import { Errors, Files } from '../Utils/functions';
 
-let routes = Files('./src/Routes/', '../../Routes', 1);
+import Errors from '../Utils/Functions/Errors';
+import Files from '../Utils/Functions/Files';
+import { Request, Response } from 'express'; // Import the necessary types
+import { ErrorType } from '../Utils/Functions/Errors';
+
+const routes = Files('./src/Routes/', '../../Routes', true);
 
 const route = async (req: Request, res: Response): Promise<Response> => {
-  try {
-    let route = routes;
-    for (let param of req.params[0].replace('/','').split("/")) {
-      if (!route[param]) return res.status(404).send({ error: `A URI inserida é invalida...` });
-      route = route[param]
+  try{
+    const params = (req.params as { [key: string]: string })[0].replace('/', '').split("/"); // Add type declaration for 'params'
+
+    let currentRoute = routes;
+
+    for (const param of params) {
+      if (!currentRoute[param]) {
+        return res.status(404).send({ error: `A URI inserida é inválida...` });
+      }
+      currentRoute = currentRoute[param];
     }
-    if (!route) return res.status(404).send({ error: `A URI inserida não foi encontrada...` });
 
-    req.method = req.method.toLowerCase()
-    if (!route[req.method] || typeof route[req.method] != 'function') return res.status(405).send({ error: `O metodo solicitado é invalido para essa URI...` });
+    if (!currentRoute) {
+      return res.status(404).send({ error: `A URI inserida não foi encontrada...` });
+    }
 
-    route = await route[req.method](req, res);
-    if (!route) return res.status(502).send({ error: `A API não retornou uma resposta valida...` });
-    return res.status(route.status || 500).send(route);
+    req.method = req.method.toLowerCase();
+    req.method = req.method.toLowerCase();
 
-  } catch(err) {
-    return Errors(err, `Routes ${__filename}`)
-      .then(() => { return route(req, res) })
-      .catch((e) => { return res.status(e.status || 500).send(e) })
+    if (!currentRoute[req.method] || typeof currentRoute[req.method] !== 'function') {
+      return res.status(405).send({ error: `O método solicitado é inválido para essa URI...` });
+    }
+
+    const response = await currentRoute[req.method](req, res);
+
+    if (!response) {
+      return res.status(502).send({ error: `A API não retornou uma resposta válida...` });
+    }
+
+    return res.status(response.status || 500).send(response);
   }
-}
+  catch (err) {
+    let errorType: ErrorType;
+
+    if (typeof err === 'string') {
+      errorType = { error: err };
+    } else if (err instanceof Error) {
+      errorType = { error: err.message };
+    } else {
+      // Trate outros tipos de erro ou lance uma exceção
+      throw new Error('Erro desconhecido');
+    }
+
+    return Errors(errorType, `ROUTE ${__filename}`)
+      .then(() => route(req, res)) // Supondo que route está definida no mesmo escopo
+      .catch((e) => e);
+  }
+};
 
 export default route;

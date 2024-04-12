@@ -1,7 +1,4 @@
-type ErrorType = {
-  error: string,
-  // outras propriedades, se houver...
-};
+import { ErrorType } from '../Functions/Errors';
 
 const feriados: string[] = [
   '01-01', // ANO NOVO
